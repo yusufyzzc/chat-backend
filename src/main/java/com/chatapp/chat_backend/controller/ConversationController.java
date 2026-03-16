@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @RestController
@@ -38,13 +40,14 @@ public class ConversationController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ConversationResponse>> getConversationsByUser(@PathVariable Long userId) {
-        List<ConversationResponse> list = conversationService.getConversationsByUser(userId).stream()
+    public ResponseEntity<Page<ConversationResponse>> getConversationsByUser(
+            @PathVariable Long userId,
+            Pageable pageable) {
+        Page<ConversationResponse> list = conversationService.getConversationsByUser(userId, pageable)
                 .map(c -> new ConversationResponse(
                         c.getId(),
                         c.getParticipants().stream().map(u -> u.getUsername()).toList(),
-                        c.getCreatedAt()))
-                .toList();
+                        c.getCreatedAt()));
         return ResponseEntity.ok(list);
     }
 }

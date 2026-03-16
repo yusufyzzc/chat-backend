@@ -6,7 +6,8 @@ import com.chatapp.chat_backend.exception.ResourceNotFoundException;
 import com.chatapp.chat_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -14,8 +15,8 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     public User getUserById(Long id) {
@@ -34,6 +35,26 @@ public class UserService {
         }
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new BadRequestException("Email already in use: " + user.getEmail());
+        }
+        return userRepository.save(user);
+    }
+
+    public User updateUser(Long id, com.chatapp.chat_backend.dto.request.UpdateUserRequest request) {
+        User user = getUserById(id);
+        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
+            if (userRepository.existsByUsername(request.getUsername())) {
+                throw new BadRequestException("Username already taken: " + request.getUsername());
+            }
+            user.setUsername(request.getUsername());
+        }
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new BadRequestException("Email already in use: " + request.getEmail());
+            }
+            user.setEmail(request.getEmail());
+        }
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(request.getPassword()); // Should hash in real app or controller
         }
         return userRepository.save(user);
     }

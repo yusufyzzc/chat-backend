@@ -10,5 +10,5 @@ public class MessageResponse {
     private Long id;
     private String content;
     private String senderUsername;
-    private LocalDateTime sentAt;
+    private LocalDateTime createdAt;
 }

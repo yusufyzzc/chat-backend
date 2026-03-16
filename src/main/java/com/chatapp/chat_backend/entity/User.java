@@ -1,14 +1,15 @@
 package com.chatapp.chat_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Data;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
 @Data
-public class User {
+@EqualsAndHashCode(callSuper = true)
+public class User extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +24,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
 
     @ManyToMany(mappedBy = "participants")
     private List<Conversation> conversations;

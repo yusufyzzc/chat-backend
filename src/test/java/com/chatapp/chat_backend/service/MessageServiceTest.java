@@ -65,13 +65,15 @@ class MessageServiceTest {
 
     @Test
     void getMessages_WhenConversationExists_ReturnsList() {
+        org.springframework.data.domain.PageRequest pageRequest = org.springframework.data.domain.PageRequest.of(0, 10);
         when(conversationService.getConversationById(1L)).thenReturn(testConversation);
-        when(messageRepository.findByConversationIdOrderBySentAtAsc(1L)).thenReturn(List.of(testMessage));
+        when(messageRepository.findByConversationIdOrderByCreatedAtAsc(1L, pageRequest))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(testMessage)));
 
-        List<Message> result = messageService.getMessages(1L);
+        org.springframework.data.domain.Page<Message> result = messageService.getMessages(1L, pageRequest);
 
-        assertEquals(1, result.size());
-        assertEquals("Merhaba!", result.get(0).getContent());
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Merhaba!", result.getContent().get(0).getContent());
     }
 
     @Test

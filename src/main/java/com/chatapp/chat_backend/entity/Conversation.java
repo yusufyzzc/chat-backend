@@ -2,20 +2,19 @@ package com.chatapp.chat_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
+import lombok.Data;
 import java.util.List;
 
 @Entity
 @Table(name = "conversations")
 @Data
-public class Conversation {
+@EqualsAndHashCode(callSuper = true)
+public class Conversation extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToMany
     @JoinTable(

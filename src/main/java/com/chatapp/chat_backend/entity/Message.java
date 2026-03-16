@@ -2,22 +2,29 @@ package com.chatapp.chat_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
+import lombok.Data;
+
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "messages")
 @Data
-public class Message {
+@EqualsAndHashCode(callSuper = true)
+@SQLDelete(sql = "UPDATE messages SET deleted = true WHERE id=?")
+@SQLRestriction("deleted=false")
+public class Message extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-
-    @Column(name = "sent_at")
-    private LocalDateTime sentAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)

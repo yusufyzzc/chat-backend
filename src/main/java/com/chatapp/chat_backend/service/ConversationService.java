@@ -6,6 +6,8 @@ import com.chatapp.chat_backend.exception.ResourceNotFoundException;
 import com.chatapp.chat_backend.repository.ConversationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -29,7 +31,7 @@ public class ConversationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation not found with id: " + id));
     }
 
-    public List<Conversation> getConversationsByUser(Long userId) {
-        return conversationRepository.findByParticipants_Id(userId);
+    public Page<Conversation> getConversationsByUser(Long userId, Pageable pageable) {
+        return conversationRepository.findByParticipants_Id(userId, pageable);
     }
 }

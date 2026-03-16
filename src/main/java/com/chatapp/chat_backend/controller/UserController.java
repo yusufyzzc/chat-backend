@@ -8,7 +8,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @RestController
@@ -18,11 +21,11 @@ public class UserController {
 
     private final UserService userService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<UserResponse> users = userService.getAllUsers().stream()
-                .map(u -> new UserResponse(u.getId(), u.getUsername(), u.getEmail(), u.getCreatedAt()))
-                .toList();
+    public ResponseEntity<Page<UserResponse>> getAllUsers(Pageable pageable) {
+        Page<UserResponse> users = userService.getAllUsers(pageable)
+                .map(u -> new UserResponse(u.getId(), u.getUsername(), u.getEmail(), u.getCreatedAt()));
         return ResponseEntity.ok(users);
     }
 
@@ -43,6 +46,15 @@ public class UserController {
                 .body(new UserResponse(saved.getId(), saved.getUsername(), saved.getEmail(), saved.getCreatedAt()));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody com.chatapp.chat_backend.dto.request.UpdateUserRequest request) {
+        User updated = userService.updateUser(id, request);
+        return ResponseEntity.ok(new UserResponse(updated.getId(), updated.getUsername(), updated.getEmail(), updated.getCreatedAt()));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
