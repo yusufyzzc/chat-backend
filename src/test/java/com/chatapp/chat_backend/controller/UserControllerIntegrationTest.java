@@ -2,6 +2,7 @@ package com.chatapp.chat_backend.controller;
 
 import com.chatapp.chat_backend.dto.request.RegisterRequest;
 import com.chatapp.chat_backend.dto.response.UserResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,10 @@ public class UserControllerIntegrationTest {
                 .andReturn();
 
         if (loginResult.getResponse().getStatus() == 200) {
-            Map<String, String> response = objectMapper.readValue(loginResult.getResponse().getContentAsString(), Map.class);
+            Map<String, String> response = objectMapper.readValue(
+                    loginResult.getResponse().getContentAsString(), 
+                    new TypeReference<Map<String, String>>() {}
+            );
             userToken = response.get("token");
         }
     }

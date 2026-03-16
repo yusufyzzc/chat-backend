@@ -77,7 +77,10 @@ public class MessageControllerIntegrationTest {
                 .andReturn();
 
         if (loginResult.getResponse().getStatus() == 200) {
-            Map<String, String> response = objectMapper.readValue(loginResult.getResponse().getContentAsString(), Map.class);
+            Map<String, String> response = objectMapper.readValue(
+                    loginResult.getResponse().getContentAsString(),
+                    new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {}
+            );
             userToken = response.get("token");
         }
 
