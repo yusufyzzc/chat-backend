@@ -1,5 +1,6 @@
 package com.chatapp.chat_backend.service;
 
+import com.chatapp.chat_backend.dto.request.UpdateUserRequest;
 import com.chatapp.chat_backend.entity.User;
 import com.chatapp.chat_backend.exception.BadRequestException;
 import com.chatapp.chat_backend.exception.ResourceNotFoundException;
@@ -76,5 +77,40 @@ class UserServiceTest {
 
         assertEquals("yusuf", result.getUsername());
         verify(userRepository, times(1)).save(testUser);
+    }
+
+    @Test
+    void getUserByUsername_WhenNotFound_ThrowsException() {
+        when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUserByUsername("unknown"));
+    }
+
+    @Test
+    void updateUser_WhenValid_UpdatesFields() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.existsByUsername("newname")).thenReturn(false);
+        when(userRepository.existsByEmail("new@test.com")).thenReturn(false);
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setUsername("newname");
+        request.setEmail("new@test.com");
+
+        User result = userService.updateUser(1L, request);
+
+        assertEquals("newname", result.getUsername());
+        assertEquals("new@test.com", result.getEmail());
+        verify(userRepository, times(1)).save(testUser);
+    }
+
+    @Test
+    void deleteUser_WhenUserExists_DeletesUser() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        doNothing().when(userRepository).delete(testUser);
+
+        userService.deleteUser(1L);
+
+        verify(userRepository, times(1)).delete(testUser);
     }
 }
