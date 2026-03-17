@@ -76,6 +76,24 @@ To execute the test suite:
 ./mvnw clean test
 ```
 
+## Test Coverage Report (JaCoCo)
+
+JaCoCo is configured in Maven to generate coverage reports and validate minimum thresholds.
+
+*   **Overall coverage goal:** 60%+ (line coverage)
+*   **Service layer coverage goal:** 70%+ (line coverage for `com/chatapp/chat_backend/service`)
+
+Run coverage checks:
+
+```bash
+./mvnw verify
+```
+
+Coverage report output:
+
+*   HTML report: `target/site/jacoco/index.html`
+*   XML report: `target/site/jacoco/jacoco.xml`
+
 ## API Documentation
 
 Once the application is running, the Swagger UI can be accessed to interact directly with the REST endpoints.
