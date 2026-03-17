@@ -52,6 +52,21 @@ This repository contains the RESTful backend implementation for a chat applicati
     .\mvnw.cmd spring-boot:run
     ```
 
+## Sample Credentials for Testing
+
+When the application starts (except with the `test` profile), default users are seeded automatically.
+
+*   **Admin User**
+    *   Username: `admin`
+    *   Email: `admin@test.com`
+    *   Password: `password123`
+*   **Regular User**
+    *   Username: `demo`
+    *   Email: `user@test.com`
+    *   Password: `password123`
+
+Use the username and password pair in `/api/auth/login`.
+
 ## Testing
 
 The project is thoroughly tested using JUnit 5, Mockito, and MockMvc for integration tests.
