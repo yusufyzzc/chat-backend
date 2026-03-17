@@ -47,4 +47,9 @@ public class MessageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found with id: " + messageId));
         messageRepository.delete(message);
     }
+
+    public Page<Message> searchMessages(Long conversationId, String keyword, Pageable pageable) {
+        conversationService.getConversationById(conversationId);
+        return messageRepository.findByConversationIdAndContentContainingIgnoreCase(conversationId, keyword, pageable);
+    }
 }

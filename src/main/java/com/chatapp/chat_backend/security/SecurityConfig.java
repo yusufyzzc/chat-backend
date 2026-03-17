@@ -35,7 +35,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/webjars/**",
-                                "/api/health/**"
+                                "/api/health/**",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(f -> f.disable()))

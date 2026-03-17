@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ public class ConversationController {
 
     private final ConversationService conversationService;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<ConversationResponse> createConversation(@Valid @RequestBody CreateConversationRequest request) {
         Conversation conversation = conversationService.createConversation(request.getUserId1(), request.getUserId2());
@@ -30,6 +32,7 @@ public class ConversationController {
                 .body(new ConversationResponse(conversation.getId(), usernames, conversation.getCreatedAt()));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<ConversationResponse> getConversation(@PathVariable Long id) {
         Conversation conversation = conversationService.getConversationById(id);
@@ -39,6 +42,7 @@ public class ConversationController {
         return ResponseEntity.ok(new ConversationResponse(conversation.getId(), usernames, conversation.getCreatedAt()));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<ConversationResponse>> getConversationsByUser(
             @PathVariable Long userId,

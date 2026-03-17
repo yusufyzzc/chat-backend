@@ -9,4 +9,5 @@ import org.springframework.data.domain.Pageable;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
     Page<Message> findByConversationIdOrderByCreatedAtAsc(Long conversationId, Pageable pageable);
+    Page<Message> findByConversationIdAndContentContainingIgnoreCase(Long conversationId, String keyword, Pageable pageable);
 }

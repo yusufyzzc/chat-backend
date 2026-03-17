@@ -54,4 +54,15 @@ public class MessageController {
         return ResponseEntity.ok(new MessageResponse(message.getId(), message.getContent(),
                 message.getSender().getUsername(), message.getCreatedAt()));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<MessageResponse>> searchMessages(
+            @PathVariable Long conversationId,
+            @RequestParam String keyword,
+            Pageable pageable) {
+        Page<MessageResponse> messages = messageService.searchMessages(conversationId, keyword, pageable)
+                .map(m -> new MessageResponse(m.getId(), m.getContent(),
+                        m.getSender().getUsername(), m.getCreatedAt()));
+        return ResponseEntity.ok(messages);
+    }
 }

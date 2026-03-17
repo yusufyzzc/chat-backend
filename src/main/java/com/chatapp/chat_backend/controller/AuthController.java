@@ -1,5 +1,6 @@
 package com.chatapp.chat_backend.controller;
 
+import com.chatapp.chat_backend.dto.request.LoginRequest;
 import com.chatapp.chat_backend.dto.request.RegisterRequest;
 import com.chatapp.chat_backend.dto.response.UserResponse;
 import com.chatapp.chat_backend.entity.User;
@@ -35,14 +36,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest request) {
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                request.get("username"),
-                request.get("password")
+                request.getUsername(),
+                request.getPassword()
             )
         );
-        String token = jwtUtil.generateToken(request.get("username"));
+        String token = jwtUtil.generateToken(request.getUsername());
         return ResponseEntity.ok(Map.of("token", token));
     }
 }

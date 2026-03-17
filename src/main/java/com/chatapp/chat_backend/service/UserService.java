@@ -5,6 +5,7 @@ import com.chatapp.chat_backend.exception.BadRequestException;
 import com.chatapp.chat_backend.exception.ResourceNotFoundException;
 import com.chatapp.chat_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Page<User> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -54,7 +56,7 @@ public class UserService {
             user.setEmail(request.getEmail());
         }
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPassword(request.getPassword()); // Should hash in real app or controller
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         return userRepository.save(user);
     }

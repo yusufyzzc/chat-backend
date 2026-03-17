@@ -1,5 +1,6 @@
 package com.chatapp.chat_backend.controller;
 
+import com.chatapp.chat_backend.dto.request.LoginRequest;
 import com.chatapp.chat_backend.dto.request.RegisterRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -90,10 +90,9 @@ public class AuthControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         // Then login
-        Map<String, String> loginRequest = Map.of(
-                "username", username,
-                "password", "password123"
-        );
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername(username);
+        loginRequest.setPassword("password123");
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -102,3 +101,4 @@ public class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.token").exists());
     }
 }
+
