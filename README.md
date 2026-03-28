@@ -8,7 +8,8 @@ This repository contains the RESTful backend implementation for a chat applicati
 *   **Spring Boot 3.5.11**
 *   **Spring Security** for authentication and authorization
 *   **Spring Data JPA** with Hibernate ORM
-*   **H2 In-Memory Database** (configured for development and testing)
+*   **H2 In-Memory Database** (default profile — development & testing, no setup required)
+*   **PostgreSQL** (production profile — persistent, production-ready database)
 *   **JJWT** for stateless JWT token validation
 *   **Maven** for dependency management and build execution
 *   **JUnit 5 and MockMvc** for unit and integration testing
@@ -39,18 +40,57 @@ This repository contains the RESTful backend implementation for a chat applicati
 6.  **Soft Deletion:**
     *   Message deletion is implemented as a soft delete (`deleted=true`) utilizing Hibernate's `@SQLDelete` and `@SQLRestriction`.
 
-## Setup and Execution
+## Database Configuration
 
-1.  **Clone the repository and enter the directory.**
-2.  **Execute the Maven Wrapper:**
-    To run the application locally on port 8080:
-    ```bash
-    ./mvnw spring-boot:run
-    ```
-    If using Windows:
-    ```cmd
-    .\mvnw.cmd spring-boot:run
-    ```
+The application supports two database profiles, selected via the `spring.profiles.active` property.
+
+| Profile | Database | Data Persistence | Setup Required |
+|---|---|---|---|
+| `h2` *(default)* | H2 In-Memory | Resets on restart | ❌ None |
+| `postgres` | PostgreSQL | Persistent | ✅ See below |
+
+### Running with H2 (default)
+
+No configuration needed — just run:
+
+```bash
+# Linux / macOS
+./mvnw spring-boot:run
+
+# Windows
+.\mvnw.cmd spring-boot:run
+```
+
+H2 web console is available at `http://localhost:8080/h2-console`
+- **JDBC URL:** `jdbc:h2:mem:chatdb`
+- **Username:** `sa`  |  **Password:** *(leave empty)*
+
+### Running with PostgreSQL
+
+1. Make sure PostgreSQL is installed and running.
+2. Create the database:
+   ```sql
+   CREATE DATABASE chatdb;
+   ```
+3. Set your credentials via environment variables (recommended) or edit `application-postgres.properties`:
+
+   ```bash
+   # Linux / macOS
+   export DB_URL=jdbc:postgresql://localhost:5432/chatdb
+   export DB_USERNAME=postgres
+   export DB_PASSWORD=your_password
+   ./mvnw spring-boot:run -Dspring.profiles.active=postgres
+   ```
+
+   ```powershell
+   # Windows (PowerShell)
+   $env:DB_URL="jdbc:postgresql://localhost:5432/chatdb"
+   $env:DB_USERNAME="postgres"
+   $env:DB_PASSWORD="your_password"
+   .\mvnw.cmd spring-boot:run -Dspring.profiles.active=postgres
+   ```
+
+> **Note:** Never commit credentials directly. Use environment variables or a local `application-local.properties` file (already git-ignored).
 
 ## Sample Credentials for Testing
 
