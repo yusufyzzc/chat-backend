@@ -1,0 +1,13 @@
+$kind: http-request
+url: http://localhost:8080/api/conversations/1/messages
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+        "senderId": 1,
+        "content": "Hello world"
+    }
+order: 1000

@@ -1,0 +1,12 @@
+$kind: http-request
+url: http://localhost:8080/api/conversations/1
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+        "participantIds": [1, 2, 3]
+    }
+order: 4000

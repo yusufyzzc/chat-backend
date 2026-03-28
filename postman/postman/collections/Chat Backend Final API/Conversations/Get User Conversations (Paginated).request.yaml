@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/api/conversations/user/1?page=0&size=10
+method: GET
+queryParams:
+  page: "0"
+  size: "10"
+order: 3000

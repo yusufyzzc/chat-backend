@@ -28,6 +28,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/*.css",
+                                "/*.js",
+                                "/*.ico",
                                 "/api/auth/**",
                                 "/h2-console/**",
                                 "/v3/api-docs",

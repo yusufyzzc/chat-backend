@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Chat Backend — A modern real-time chat application with user management, conversations, and messaging.">
+  <title>ChatApp — Backend UI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Toast notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ======================== AUTH PAGE ======================== -->
+  <div id="authPage" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="logo">
+        <h1>💬 ChatApp</h1>
+        <p>Sign in to start chatting</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="loginTab" class="active" onclick="App.showAuthTab('login')">Sign In</button>
+        <button id="registerTab" onclick="App.showAuthTab('register')">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="App.handleLogin(event)">
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter your username" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="loginBtn">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="hidden" onsubmit="App.handleRegister(event)">
+        <div class="form-group">
+          <label for="regUsername">Username</label>
+          <input type="text" id="regUsername" placeholder="Choose a username" required minlength="3">
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" placeholder="Create a password" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="regBtn">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================== MAIN APP ======================== -->
+  <div id="appPage" class="app-layout hidden">
+
+    <!-- ---- SIDEBAR ---- -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="logo-sm">💬 ChatApp</span>
+      </div>
+
+      <!-- Top bar: status + user info -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <span class="status-dot" id="healthDot"></span>
+          <span class="status-text" id="healthText">Checking…</span>
+        </div>
+        <div class="topbar-right">
+          <span class="user-badge" id="userBadge">—</span>
+          <button class="icon-btn" title="Logout" onclick="App.logout()">⏻</button>
+        </div>
+      </div>
+
+      <!-- Navigation tabs: Chats | Users (admin) -->
+      <div class="sidebar-nav">
+        <button id="navChats" class="active" onclick="App.switchSidebarTab('chats')">💬 Chats</button>
+        <button id="navUsers" onclick="App.switchSidebarTab('users')">👥 Users</button>
+      </div>
+
+      <!-- Actions -->
+      <div class="sidebar-actions" id="sidebarActions">
+        <button class="btn btn-primary btn-sm btn-full" id="newConvBtn" onclick="App.openNewConversationModal()">
+          ＋ New Conversation
+        </button>
+      </div>
+
+      <!-- Scrollable list -->
+      <div class="sidebar-list" id="sidebarList">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+    <!-- ---- MAIN PANEL ---- -->
+    <div class="main-panel" id="mainPanel">
+
+      <!-- Default empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">💬</div>
+        <h3>Welcome to ChatApp</h3>
+        <p>Select a conversation from the sidebar or start a new one to begin chatting.</p>
+      </div>
+
+      <!-- Chat View -->
+      <div id="chatView" class="hidden" style="display:flex;flex-direction:column;height:100%;">
+        <div class="chat-header" id="chatHeader">
+          <div class="chat-header-left">
+            <div class="avatar" id="chatAvatar">?</div>
+            <div>
+              <div class="chat-name" id="chatName">Conversation</div>
+              <div class="chat-subtitle" id="chatSubtitle">—</div>
+            </div>
+          </div>
+          <div class="chat-header-right conv-detail-actions">
+            <button class="icon-btn" title="Search Messages" id="searchToggleBtn" onclick="App.toggleSearchBar()">🔍</button>
+            <button class="icon-btn" title="Edit Participants" onclick="App.openEditConversationModal()">✏️</button>
+            <button class="icon-btn" title="Delete Conversation" onclick="App.deleteConversation()">🗑️</button>
+          </div>
+        </div>
+        <div class="search-bar hidden" id="searchBar">
+          <input type="text" id="searchInput" placeholder="Search messages…" onkeydown="if(event.key==='Enter')App.searchMessages()">
+          <button class="btn btn-sm btn-secondary" onclick="App.searchMessages()">Search</button>
+          <button class="btn btn-sm btn-secondary" onclick="App.clearSearch()">✕</button>
+        </div>
+        <div class="messages-area" id="messagesArea">
+          <!-- messages rendered here -->
+        </div>
+        <div class="message-input-area" id="messageInputArea">
+          <div class="message-input-wrapper">
+            <input type="text" id="messageInput" placeholder="Type a message…" onkeydown="if(event.key==='Enter')App.sendMessage()">
+            <button class="send-btn" onclick="App.sendMessage()" title="Send">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Users Panel -->
+      <div id="adminPanel" class="admin-panel hidden">
+        <div class="admin-header">
+          <h2>👥 User Management</h2>
+          <button class="btn btn-primary btn-sm" id="createUserBtn" onclick="App.openCreateUserModal()">＋ Create User</button>
+        </div>
+        <div class="admin-content" id="adminContent">
+          <table class="data-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- rows -->
+            </tbody>
+          </table>
+          <div class="pagination" id="usersPagination"></div>
+        </div>
+      </div>
+
+      <!-- User Profile View -->
+      <div id="profileView" class="hidden" style="display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto;height:100%;">
+        <div class="profile-card" id="profileCard">
+          <!-- profile details -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================== MODALS ======================== -->
+
+  <!-- New Conversation Modal -->
+  <div class="modal-overlay hidden" id="newConvModal">
+    <div class="modal">
+      <h2>💬 New Conversation</h2>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;">Select a user to start a conversation with:</p>
+      <div id="convUserList" class="user-select-list">
+        <!-- populated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="App.closeModal('newConvModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="App.createConversation()">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Conversation Modal -->
+  <div class="modal-overlay hidden" id="editConvModal">
+    <div class="modal">
+      <h2>✏️ Edit Participants</h2>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;">Select participants (at least 2):</p>
+      <div id="editConvUserList" class="user-select-list">
+        <!-- populated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="App.closeModal('editConvModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="App.updateConversation()">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create User Modal (Admin) -->
+  <div class="modal-overlay hidden" id="createUserModal">
+    <div class="modal">
+      <h2>👤 Create User</h2>
+      <form onsubmit="App.createUserAdmin(event)">
+        <div class="form-group">
+          <label for="newUserName">Username</label>
+          <input type="text" id="newUserName" required minlength="3">
+        </div>
+        <div class="form-group">
+          <label for="newUserEmail">Email</label>
+          <input type="email" id="newUserEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="newUserPass">Password</label>
+          <input type="password" id="newUserPass" required minlength="6">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('createUserModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal-overlay hidden" id="editUserModal">
+    <div class="modal">
+      <h2>✏️ Edit User</h2>
+      <form onsubmit="App.updateUser(event)">
+        <input type="hidden" id="editUserId">
+        <div class="form-group">
+          <label for="editUserName">Username</label>
+          <input type="text" id="editUserName" minlength="3">
+        </div>
+        <div class="form-group">
+          <label for="editUserEmail">Email</label>
+          <input type="email" id="editUserEmail">
+        </div>
+        <div class="form-group">
+          <label for="editUserPass">New Password (optional)</label>
+          <input type="password" id="editUserPass" minlength="6" placeholder="Leave blank to keep current">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('editUserModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

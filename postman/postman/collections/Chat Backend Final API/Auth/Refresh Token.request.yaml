@@ -1,0 +1,21 @@
+$kind: http-request
+url: http://localhost:8080/api/auth/refresh
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+        "refreshToken": "{{refreshToken}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      var json = pm.response.json();
+      if (json.accessToken && json.refreshToken) {
+          pm.collectionVariables.set('accessToken', json.accessToken);
+          pm.collectionVariables.set('refreshToken', json.refreshToken);
+      }
+    language: text/javascript
+order: 3000

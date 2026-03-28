@@ -1,0 +1,13 @@
+$kind: http-request
+url: http://localhost:8080/api/conversations
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+        "userId1": 1,
+        "userId2": 2
+    }
+order: 1000

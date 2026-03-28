@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://localhost:8080/api/conversations/1/messages/1
+method: DELETE
+order: 4000

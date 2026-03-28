@@ -1,0 +1,12 @@
+$kind: http-request
+url: http://localhost:8080/api/users/1
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+        "username": "updatedtestuser1"
+    }
+order: 3000

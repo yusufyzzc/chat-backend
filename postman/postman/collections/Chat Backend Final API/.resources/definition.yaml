@@ -1,0 +1,10 @@
+$kind: collection
+variables:
+  accessToken: ""
+  refreshToken: ""
+auth:
+  - id: 2e569b51-0b5e-4b29-b2a5-f00a9b968cc1
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{accessToken}}"
