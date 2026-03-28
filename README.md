@@ -139,6 +139,76 @@ Coverage report output:
 Once the application is running, the Swagger UI can be accessed to interact directly with the REST endpoints.
 Navigate to: `http://localhost:8080/swagger-ui/index.html`
 
+## Authentication
+
+The API uses a **short-lived Access Token + long-lived Refresh Token** flow.
+
+### POST /api/auth/register
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{ "username": "alice", "email": "alice@example.com", "password": "password123" }
+```
+
+### POST /api/auth/login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{ "username": "alice", "password": "password123" }
+```
+
+**Response:**
+```json
+{
+  "accessToken": "eyJhbGci...",
+  "refreshToken": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### POST /api/auth/refresh
+
+Exchanges a refresh token for a **new access token and a rotated refresh token** (old refresh token is revoked).
+
+```http
+POST /api/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "550e8400-e29b-41d4-a716-446655440000" }
+```
+
+**Response:**
+```json
+{
+  "accessToken": "eyJhbGci...",
+  "refreshToken": "new-uuid-..."
+}
+```
+
+### POST /api/auth/logout
+
+Revokes the refresh token. The access token expires on its own (24 h TTL).
+
+```http
+POST /api/auth/logout
+Content-Type: application/json
+
+{ "refreshToken": "550e8400-e29b-41d4-a716-446655440000" }
+```
+
+**Response:** `204 No Content`
+
+### Using the access token
+
+Include the `accessToken` value as a Bearer token in all protected API calls:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
 ## Postman Collection
 
-A `Chat_Backend.postman_collection.json` file is included in the root directory. It can be imported directly into Postman for comprehensive testing of all endpoints.
+A `Chat_Backend_API.postman_collection.json` file is included in the root directory. It can be imported directly into Postman for comprehensive testing of all endpoints. The Login request stores `accessToken` and `refreshToken` automatically into collection variables used by subsequent requests.

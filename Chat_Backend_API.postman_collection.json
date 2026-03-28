@@ -25,20 +25,27 @@
 						"url": {
 							"raw": "http://localhost:8080/api/auth/register",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"auth",
-								"register"
-							]
+							"path": ["api", "auth", "register"]
 						}
 					}
 				},
 				{
 					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var json = pm.response.json();",
+									"pm.collectionVariables.set('accessToken', json.accessToken);",
+									"pm.collectionVariables.set('refreshToken', json.refreshToken);"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -49,20 +56,73 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"testuser1\",\n    \"password\": \"password123\"\n}"
+							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"password123\"\n}"
 						},
 						"url": {
 							"raw": "http://localhost:8080/api/auth/login",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var json = pm.response.json();",
+									"pm.collectionVariables.set('accessToken', json.accessToken);",
+									"pm.collectionVariables.set('refreshToken', json.refreshToken);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/refresh",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "auth", "refresh"]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/logout",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "auth", "logout"]
 						}
 					}
 				}
@@ -75,27 +135,21 @@
 					"name": "Get All Users (Paginated, ADMIN)",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
 						"url": {
 							"raw": "http://localhost:8080/api/users?page=0&size=10",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"users"
-							],
+							"path": ["api", "users"],
 							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "size",
-									"value": "10"
-								}
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
 							]
 						}
 					}
@@ -104,19 +158,18 @@
 					"name": "Get User By ID",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
 						"url": {
 							"raw": "http://localhost:8080/api/users/1",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"users",
-								"1"
-							]
+							"path": ["api", "users", "1"]
 						}
 					}
 				},
@@ -128,6 +181,10 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -137,15 +194,28 @@
 						"url": {
 							"raw": "http://localhost:8080/api/users/1",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"users",
-								"1"
-							]
+							"path": ["api", "users", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete User (ADMIN)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/users/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users", "1"]
 						}
 					}
 				}
@@ -162,23 +232,41 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"participantIds\": [1, 2]\n}"
+							"raw": "{\n    \"userId1\": 1,\n    \"userId2\": 2\n}"
 						},
 						"url": {
 							"raw": "http://localhost:8080/api/conversations",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"conversations"
-							]
+							"path": ["api", "conversations"]
+						}
+					}
+				},
+				{
+					"name": "Get Conversation By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/conversations/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "conversations", "1"]
 						}
 					}
 				},
@@ -186,30 +274,68 @@
 					"name": "Get User Conversations (Paginated)",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/user/1?page=0&size=10",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"conversations",
-								"user",
-								"1"
-							],
+							"path": ["api", "conversations", "user", "1"],
 							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "size",
-									"value": "10"
-								}
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
 							]
+						}
+					}
+				},
+				{
+					"name": "Update Conversation",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"participantIds\": [1, 2, 3]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/conversations/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "conversations", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Conversation",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/conversations/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "conversations", "1"]
 						}
 					}
 				}
@@ -226,6 +352,10 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -235,16 +365,9 @@
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"conversations",
-								"1",
-								"messages"
-							]
+							"path": ["api", "conversations", "1", "messages"]
 						}
 					}
 				},
@@ -252,29 +375,21 @@
 					"name": "Get Messages (Paginated)",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages?page=0&size=10",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"conversations",
-								"1",
-								"messages"
-							],
+							"path": ["api", "conversations", "1", "messages"],
 							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "size",
-									"value": "10"
-								}
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
 							]
 						}
 					}
@@ -287,6 +402,10 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -296,17 +415,9 @@
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages/1",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"conversations",
-								"1",
-								"messages",
-								"1"
-							]
+							"path": ["api", "conversations", "1", "messages", "1"]
 						}
 					}
 				},
@@ -314,21 +425,18 @@
 					"name": "Delete Message",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages/1",
 							"protocol": "http",
-							"host": [
-								"localhost"
-							],
+							"host": ["localhost"],
 							"port": "8080",
-							"path": [
-								"api",
-								"conversations",
-								"1",
-								"messages",
-								"1"
-							]
+							"path": ["api", "conversations", "1", "messages", "1"]
 						}
 					}
 				}
@@ -340,28 +448,34 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "{{auth_token}}",
+				"value": "{{accessToken}}",
 				"type": "string"
 			}
 		]
 	},
+	"variable": [
+		{
+			"key": "accessToken",
+			"value": ""
+		},
+		{
+			"key": "refreshToken",
+			"value": ""
+		}
+	],
 	"event": [
 		{
 			"listen": "prerequest",
 			"script": {
 				"type": "text/javascript",
-				"exec": [
-					""
-				]
+				"exec": [""]
 			}
 		},
 		{
 			"listen": "test",
 			"script": {
 				"type": "text/javascript",
-				"exec": [
-					""
-				]
+				"exec": [""]
 			}
 		}
 	]
