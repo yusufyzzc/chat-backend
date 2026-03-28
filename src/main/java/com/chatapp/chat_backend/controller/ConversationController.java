@@ -1,6 +1,7 @@
 package com.chatapp.chat_backend.controller;
 
 import com.chatapp.chat_backend.dto.request.CreateConversationRequest;
+import com.chatapp.chat_backend.dto.request.UpdateConversationRequest;
 import com.chatapp.chat_backend.dto.response.ConversationResponse;
 import com.chatapp.chat_backend.entity.Conversation;
 import com.chatapp.chat_backend.service.ConversationService;
@@ -53,5 +54,24 @@ public class ConversationController {
                         c.getParticipants().stream().map(u -> u.getUsername()).toList(),
                         c.getCreatedAt()));
         return ResponseEntity.ok(list);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/{id}")
+    public ResponseEntity<ConversationResponse> updateConversation(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateConversationRequest request) {
+        Conversation conversation = conversationService.updateConversation(id, request);
+        List<String> usernames = conversation.getParticipants().stream()
+                .map(u -> u.getUsername())
+                .toList();
+        return ResponseEntity.ok(new ConversationResponse(conversation.getId(), usernames, conversation.getCreatedAt()));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteConversation(@PathVariable Long id) {
+        conversationService.deleteConversation(id);
+        return ResponseEntity.noContent().build();
     }
 }

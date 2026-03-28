@@ -1,8 +1,8 @@
 package com.chatapp.chat_backend.controller;
 
+import com.chatapp.chat_backend.dto.request.LoginRequest;
 import com.chatapp.chat_backend.dto.request.RegisterRequest;
 import com.chatapp.chat_backend.dto.response.UserResponse;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -55,10 +54,9 @@ public class UserControllerIntegrationTest {
             targetUserId = response.getId();
         }
 
-        Map<String, String> loginRequest = Map.of(
-                "username", username,
-                "password", "password123"
-        );
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername(username);
+        loginRequest.setPassword("password123");
 
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -66,11 +64,8 @@ public class UserControllerIntegrationTest {
                 .andReturn();
 
         if (loginResult.getResponse().getStatus() == 200) {
-            Map<String, String> response = objectMapper.readValue(
-                    loginResult.getResponse().getContentAsString(), 
-                    new TypeReference<Map<String, String>>() {}
-            );
-            userToken = response.get("token");
+            userToken = objectMapper.readTree(loginResult.getResponse().getContentAsString())
+                    .get("accessToken").asText();
         }
     }
 
@@ -86,5 +81,35 @@ public class UserControllerIntegrationTest {
                 .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").exists());
+    }
+
+    @Test
+    void testCreateUser_AsNonAdmin_ReturnsForbidden() throws Exception {
+        String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("shouldfail_" + uniqueSuffix);
+        request.setEmail("shouldfail_" + uniqueSuffix + "@example.com");
+        request.setPassword("password123");
+
+        // Regular user token (not ADMIN) should get 403
+        mockMvc.perform(post("/api/users")
+                .header("Authorization", "Bearer " + userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testCreateUser_WithoutAuth_ReturnsForbidden() throws Exception {
+        String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("noauth_" + uniqueSuffix);
+        request.setEmail("noauth_" + uniqueSuffix + "@example.com");
+        request.setPassword("password123");
+
+        mockMvc.perform(post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 }

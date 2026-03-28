@@ -1,5 +1,6 @@
 package com.chatapp.chat_backend.service;
 
+import com.chatapp.chat_backend.dto.request.UpdateConversationRequest;
 import com.chatapp.chat_backend.entity.Conversation;
 import com.chatapp.chat_backend.entity.User;
 import com.chatapp.chat_backend.exception.ResourceNotFoundException;
@@ -35,6 +36,7 @@ class ConversationServiceTest {
 
     private User user1;
     private User user2;
+    private User user3;
     private Conversation testConversation;
 
     @BeforeEach
@@ -46,6 +48,10 @@ class ConversationServiceTest {
         user2 = new User();
         user2.setId(2L);
         user2.setUsername("ali");
+
+        user3 = new User();
+        user3.setId(3L);
+        user3.setUsername("veli");
 
         testConversation = new Conversation();
         testConversation.setId(1L);
@@ -84,5 +90,49 @@ class ConversationServiceTest {
 
         assertEquals(1, result.getTotalElements());
         assertEquals("yusuf", result.getContent().get(0).getParticipants().get(0).getUsername());
+    }
+
+    @Test
+    void updateConversation_ReplacesParticipants() {
+        when(conversationRepository.findById(1L)).thenReturn(Optional.of(testConversation));
+        when(userService.getUserById(1L)).thenReturn(user1);
+        when(userService.getUserById(3L)).thenReturn(user3);
+        when(conversationRepository.save(any(Conversation.class))).thenReturn(testConversation);
+
+        UpdateConversationRequest request = new UpdateConversationRequest();
+        request.setParticipantIds(List.of(1L, 3L));
+
+        Conversation result = conversationService.updateConversation(1L, request);
+
+        assertNotNull(result);
+        verify(conversationRepository, times(1)).save(any(Conversation.class));
+    }
+
+    @Test
+    void updateConversation_WhenNotFound_ThrowsException() {
+        when(conversationRepository.findById(99L)).thenReturn(Optional.empty());
+
+        UpdateConversationRequest request = new UpdateConversationRequest();
+        request.setParticipantIds(List.of(1L, 2L));
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> conversationService.updateConversation(99L, request));
+    }
+
+    @Test
+    void deleteConversation_CallsRepositoryDelete() {
+        when(conversationRepository.findById(1L)).thenReturn(Optional.of(testConversation));
+        doNothing().when(conversationRepository).delete(testConversation);
+
+        conversationService.deleteConversation(1L);
+
+        verify(conversationRepository, times(1)).delete(testConversation);
+    }
+
+    @Test
+    void deleteConversation_WhenNotFound_ThrowsException() {
+        when(conversationRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> conversationService.deleteConversation(99L));
     }
 }
