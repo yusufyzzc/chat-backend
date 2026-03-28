@@ -97,7 +97,7 @@ Coverage report output:
 ## API Documentation
 
 Once the application is running, the Swagger UI can be accessed to interact directly with the REST endpoints.
-Navigate to: `http://localhost:8080/swagger-ui.html`
+Navigate to: `http://localhost:8080/swagger-ui/index.html`
 
 ## Postman Collection
 
