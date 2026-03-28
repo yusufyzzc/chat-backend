@@ -25,9 +25,15 @@
 						"url": {
 							"raw": "http://localhost:8080/api/auth/register",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "auth", "register"]
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
 						}
 					}
 				},
@@ -40,8 +46,10 @@
 								"type": "text/javascript",
 								"exec": [
 									"var json = pm.response.json();",
-									"pm.collectionVariables.set('accessToken', json.accessToken);",
-									"pm.collectionVariables.set('refreshToken', json.refreshToken);"
+									"if (json.accessToken && json.refreshToken) {",
+									"    pm.collectionVariables.set('accessToken', json.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+									"}"
 								]
 							}
 						}
@@ -61,9 +69,15 @@
 						"url": {
 							"raw": "http://localhost:8080/api/auth/login",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "auth", "login"]
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
 						}
 					}
 				},
@@ -76,8 +90,10 @@
 								"type": "text/javascript",
 								"exec": [
 									"var json = pm.response.json();",
-									"pm.collectionVariables.set('accessToken', json.accessToken);",
-									"pm.collectionVariables.set('refreshToken', json.refreshToken);"
+									"if (json.accessToken && json.refreshToken) {",
+									"    pm.collectionVariables.set('accessToken', json.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+									"}"
 								]
 							}
 						}
@@ -97,9 +113,15 @@
 						"url": {
 							"raw": "http://localhost:8080/api/auth/refresh",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "auth", "refresh"]
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
 						}
 					}
 				},
@@ -120,13 +142,22 @@
 						"url": {
 							"raw": "http://localhost:8080/api/auth/logout",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "auth", "logout"]
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
 						}
 					}
 				}
-			]
+			],
+			"auth": {
+				"type": "noauth"
+			}
 		},
 		{
 			"name": "Users",
@@ -135,21 +166,27 @@
 					"name": "Get All Users (Paginated, ADMIN)",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/users?page=0&size=10",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "users"],
+							"path": [
+								"api",
+								"users"
+							],
 							"query": [
-								{"key": "page", "value": "0"},
-								{"key": "size", "value": "10"}
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
 							]
 						}
 					}
@@ -158,18 +195,19 @@
 					"name": "Get User By ID",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/users/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "users", "1"]
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
 						}
 					}
 				},
@@ -181,10 +219,6 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -194,9 +228,15 @@
 						"url": {
 							"raw": "http://localhost:8080/api/users/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "users", "1"]
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
 						}
 					}
 				},
@@ -204,18 +244,19 @@
 					"name": "Delete User (ADMIN)",
 					"request": {
 						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/users/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "users", "1"]
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
 						}
 					}
 				}
@@ -232,10 +273,6 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -245,9 +282,14 @@
 						"url": {
 							"raw": "http://localhost:8080/api/conversations",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations"]
+							"path": [
+								"api",
+								"conversations"
+							]
 						}
 					}
 				},
@@ -255,18 +297,19 @@
 					"name": "Get Conversation By ID",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "1"]
+							"path": [
+								"api",
+								"conversations",
+								"1"
+							]
 						}
 					}
 				},
@@ -274,21 +317,29 @@
 					"name": "Get User Conversations (Paginated)",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/user/1?page=0&size=10",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "user", "1"],
+							"path": [
+								"api",
+								"conversations",
+								"user",
+								"1"
+							],
 							"query": [
-								{"key": "page", "value": "0"},
-								{"key": "size", "value": "10"}
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
 							]
 						}
 					}
@@ -301,10 +352,6 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -314,9 +361,15 @@
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "1"]
+							"path": [
+								"api",
+								"conversations",
+								"1"
+							]
 						}
 					}
 				},
@@ -324,18 +377,19 @@
 					"name": "Delete Conversation",
 					"request": {
 						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "1"]
+							"path": [
+								"api",
+								"conversations",
+								"1"
+							]
 						}
 					}
 				}
@@ -352,10 +406,6 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -365,9 +415,16 @@
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "1", "messages"]
+							"path": [
+								"api",
+								"conversations",
+								"1",
+								"messages"
+							]
 						}
 					}
 				},
@@ -375,21 +432,29 @@
 					"name": "Get Messages (Paginated)",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages?page=0&size=10",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "1", "messages"],
+							"path": [
+								"api",
+								"conversations",
+								"1",
+								"messages"
+							],
 							"query": [
-								{"key": "page", "value": "0"},
-								{"key": "size", "value": "10"}
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
 							]
 						}
 					}
@@ -402,10 +467,6 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
@@ -415,9 +476,17 @@
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "1", "messages", "1"]
+							"path": [
+								"api",
+								"conversations",
+								"1",
+								"messages",
+								"1"
+							]
 						}
 					}
 				},
@@ -425,18 +494,21 @@
 					"name": "Delete Message",
 					"request": {
 						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "http://localhost:8080/api/conversations/1/messages/1",
 							"protocol": "http",
-							"host": ["localhost"],
+							"host": [
+								"localhost"
+							],
 							"port": "8080",
-							"path": ["api", "conversations", "1", "messages", "1"]
+							"path": [
+								"api",
+								"conversations",
+								"1",
+								"messages",
+								"1"
+							]
 						}
 					}
 				}
@@ -468,14 +540,18 @@
 			"listen": "prerequest",
 			"script": {
 				"type": "text/javascript",
-				"exec": [""]
+				"exec": [
+					""
+				]
 			}
 		},
 		{
 			"listen": "test",
 			"script": {
 				"type": "text/javascript",
-				"exec": [""]
+				"exec": [
+					""
+				]
 			}
 		}
 	]
