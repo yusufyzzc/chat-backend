@@ -117,4 +117,31 @@ class UserServiceTest {
 
         verify(userRepository, times(1)).delete(testUser);
     }
+
+    @Test
+    void updateUser_WhenDuplicateUsername_ThrowsException() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.existsByUsername("taken")).thenReturn(true);
+
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setUsername("taken");
+
+        assertThrows(BadRequestException.class, () -> userService.updateUser(1L, request));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateUser_WhenPasswordProvided_EncodesPassword() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(passwordEncoder.encode("newSecurePass")).thenReturn("encodedPass");
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setPassword("newSecurePass");
+
+        User result = userService.updateUser(1L, request);
+
+        assertEquals("encodedPass", result.getPassword());
+        verify(passwordEncoder, times(1)).encode("newSecurePass");
+    }
 }

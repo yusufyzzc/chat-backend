@@ -149,7 +149,7 @@ const App = (() => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Login failed');
+        throw new Error(extractErrorMsg(err, 'Login failed'));
       }
       const data = await res.json();
       accessToken = data.accessToken;
@@ -186,7 +186,7 @@ const App = (() => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Registration failed');
+        throw new Error(extractErrorMsg(err, 'Registration failed'));
       }
       toast('Account created! Please sign in.', 'success');
       showAuthTab('login');
@@ -392,6 +392,18 @@ const App = (() => {
     }
   }
 
+  // Extract a readable error message from backend responses
+  function extractErrorMsg(errObj, fallback) {
+    if (!errObj) return fallback;
+    if (errObj.message) return errObj.message;
+    if (errObj.errors) {
+      // {errors: {field: "msg", ...}} — validation errors
+      return Object.values(errObj.errors).join('; ');
+    }
+    if (errObj.error) return errObj.error;
+    return fallback;
+  }
+
   // POST /api/users (admin) — Create user
   async function createUserAdmin(e) {
     e.preventDefault();
@@ -405,7 +417,7 @@ const App = (() => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Create failed');
+        throw new Error(extractErrorMsg(err, 'Create failed'));
       }
       toast('User created!', 'success');
       closeModal('createUserModal');
@@ -445,7 +457,7 @@ const App = (() => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Update failed');
+        throw new Error(extractErrorMsg(err, 'Update failed'));
       }
       toast('User updated!', 'success');
       closeModal('editUserModal');
@@ -633,7 +645,7 @@ const App = (() => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Send failed');
+        throw new Error(extractErrorMsg(err, 'Send failed'));
       }
       // Reload messages
       msgPage = 0;
@@ -747,12 +759,28 @@ const App = (() => {
   // POST /api/conversations
   function openNewConversationModal() {
     const list = document.getElementById('convUserList');
-    if (allUsers.length === 0) {
-      list.innerHTML = '<div style="padding:1rem;color:var(--text-secondary);text-align:center;">No users available</div>';
+    const otherUsers = allUsers.filter(u => currentUser && u.id !== currentUser.id);
+    if (otherUsers.length === 0) {
+      list.innerHTML = `
+        <div style="padding:1rem;text-align:center;">
+          <p style="color:var(--text-secondary);margin-bottom:1rem;">No other users found. Register a new user first:</p>
+          <div class="form-group" style="text-align:left;">
+            <label for="quickRegUser">Username</label>
+            <input type="text" id="quickRegUser" placeholder="New username" required minlength="3">
+          </div>
+          <div class="form-group" style="text-align:left;">
+            <label for="quickRegEmail">Email</label>
+            <input type="email" id="quickRegEmail" placeholder="user@example.com" required>
+          </div>
+          <div class="form-group" style="text-align:left;">
+            <label for="quickRegPass">Password</label>
+            <input type="password" id="quickRegPass" placeholder="Min 6 characters" required minlength="6">
+          </div>
+          <button class="btn btn-primary btn-sm btn-full" onclick="App.quickRegisterUser()">Register & Select User</button>
+        </div>
+      `;
     } else {
-      list.innerHTML = allUsers
-        .filter(u => currentUser && u.id !== currentUser.id)
-        .map(u => `
+      list.innerHTML = otherUsers.map(u => `
           <label class="user-select-item">
             <input type="radio" name="convUser" value="${u.id}">
             <div class="avatar" style="width:30px;height:30px;font-size:0.7rem;">${initials(u.username)}</div>
@@ -761,6 +789,70 @@ const App = (() => {
         `).join('');
     }
     openModal('newConvModal');
+  }
+
+  // Quick-register a user from the New Conversation modal, then auto-create the conversation
+  async function quickRegisterUser() {
+    const username = document.getElementById('quickRegUser').value.trim();
+    const email = document.getElementById('quickRegEmail').value.trim();
+    const password = document.getElementById('quickRegPass').value;
+    if (!username || !email || !password) { toast('Fill all fields', 'error'); return; }
+    try {
+      let newUserId = null;
+      // Try admin endpoint first (returns UserResponse with id)
+      let res = await api('/api/users', {
+        method: 'POST',
+        body: JSON.stringify({ username, email, password })
+      });
+      // If admin create fails (forbidden), fall back to public register
+      if (res.status === 403 || res.status === 401) {
+        res = await fetch(`${API}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(extractErrorMsg(err, 'Registration failed'));
+      }
+      const created = await res.json();
+      newUserId = created.id;
+
+      toast('User "' + username + '" created! Starting conversation…', 'success');
+
+      // If we didn't get an ID from the response, refresh user cache and find them
+      if (!newUserId) {
+        await loadAllUsersCache();
+        const found = allUsers.find(u => u.username === username);
+        if (found) newUserId = found.id;
+      }
+
+      if (!newUserId) {
+        // Fallback: just refresh the modal so user can select manually
+        await loadAllUsersCache();
+        openNewConversationModal();
+        return;
+      }
+
+      // Automatically create the conversation with the new user
+      closeModal('newConvModal');
+      const convRes = await api('/api/conversations', {
+        method: 'POST',
+        body: JSON.stringify({ userId1: currentUser.id, userId2: newUserId })
+      });
+      if (!convRes.ok) {
+        const err = await convRes.json().catch(() => ({}));
+        throw new Error(extractErrorMsg(err, 'Could not create conversation'));
+      }
+      const conv = await convRes.json();
+      toast('Conversation started with ' + username + '!', 'success');
+      await loadAllUsersCache();
+      await loadConversations();
+      openConversation(conv.id);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
   }
 
   async function createConversation() {
@@ -776,7 +868,7 @@ const App = (() => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Could not create conversation');
+        throw new Error(extractErrorMsg(err, 'Could not create conversation'));
       }
       const conv = await res.json();
       toast('Conversation created!', 'success');
@@ -820,7 +912,7 @@ const App = (() => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Update failed');
+        throw new Error(extractErrorMsg(err, 'Update failed'));
       }
       toast('Conversation updated!', 'success');
       closeModal('editConvModal');
@@ -942,6 +1034,7 @@ const App = (() => {
     createUserAdmin,
     updateUser,
     deleteUser,
+    quickRegisterUser,
     closeModal,
     _paginateFn,
     _paginationFns: {}

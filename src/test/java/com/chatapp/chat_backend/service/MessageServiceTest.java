@@ -1,5 +1,6 @@
 package com.chatapp.chat_backend.service;
 
+import com.chatapp.chat_backend.dto.request.UpdateMessageRequest;
 import com.chatapp.chat_backend.entity.Conversation;
 import com.chatapp.chat_backend.entity.Message;
 import com.chatapp.chat_backend.entity.User;
@@ -81,5 +82,54 @@ class MessageServiceTest {
         when(messageRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> messageService.deleteMessage(99L));
+    }
+
+    @Test
+    void updateMessage_WhenValid_UpdatesContent() {
+        when(messageRepository.findById(1L)).thenReturn(Optional.of(testMessage));
+        when(messageRepository.save(any(Message.class))).thenReturn(testMessage);
+
+        UpdateMessageRequest request = new UpdateMessageRequest();
+        request.setContent("Updated message content");
+
+        Message result = messageService.updateMessage(1L, request);
+
+        assertEquals("Updated message content", result.getContent());
+        verify(messageRepository, times(1)).save(testMessage);
+    }
+
+    @Test
+    void searchMessages_ReturnsMatchingMessages() {
+        org.springframework.data.domain.PageRequest pageRequest = org.springframework.data.domain.PageRequest.of(0, 10);
+        when(conversationService.getConversationById(1L)).thenReturn(testConversation);
+        when(messageRepository.findByConversationIdAndContentContainingIgnoreCase(1L, "Merhaba", pageRequest))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(testMessage)));
+
+        org.springframework.data.domain.Page<Message> result = messageService.searchMessages(1L, "Merhaba", pageRequest);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Merhaba!", result.getContent().get(0).getContent());
+        verify(conversationService, times(1)).getConversationById(1L);
+    }
+
+    @Test
+    void deleteMessage_WhenExists_DeletesMessage() {
+        when(messageRepository.findById(1L)).thenReturn(Optional.of(testMessage));
+        doNothing().when(messageRepository).delete(testMessage);
+
+        messageService.deleteMessage(1L);
+
+        verify(messageRepository, times(1)).delete(testMessage);
+    }
+
+    @Test
+    void updateMessage_WhenNotFound_ThrowsException() {
+        when(messageRepository.findById(99L)).thenReturn(Optional.empty());
+
+        UpdateMessageRequest request = new UpdateMessageRequest();
+        request.setContent("anything");
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> messageService.updateMessage(99L, request));
     }
 }
