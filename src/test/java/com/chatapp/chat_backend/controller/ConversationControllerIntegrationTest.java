@@ -33,6 +33,8 @@ public class ConversationControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     private String accessToken;
+    private String user2AccessToken;
+    private String user3AccessToken;
     private Long user1Id;
     private Long user2Id;
     private Long user3Id;
@@ -47,8 +49,16 @@ public class ConversationControllerIntegrationTest {
         user3Id = registerUser("u3_" + suffix, "u3_" + suffix + "@test.com");
 
         // Login as user1
+        accessToken = loginUser("u1_" + suffix);
+        // Login as user2
+        user2AccessToken = loginUser("u2_" + suffix);
+        // Login as user3
+        user3AccessToken = loginUser("u3_" + suffix);
+    }
+
+    private String loginUser(String username) throws Exception {
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsername("u1_" + suffix);
+        loginRequest.setUsername(username);
         loginRequest.setPassword("password123");
 
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
@@ -57,7 +67,7 @@ public class ConversationControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        accessToken = objectMapper.readTree(loginResult.getResponse().getContentAsString())
+        return objectMapper.readTree(loginResult.getResponse().getContentAsString())
                 .get("accessToken").asText();
     }
 
@@ -121,5 +131,48 @@ public class ConversationControllerIntegrationTest {
         mockMvc.perform(delete("/api/conversations/999999")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetConversation_OwnConversation_ReturnsOk() throws Exception {
+        Long conversationId = createConversation(user1Id, user2Id);
+
+        mockMvc.perform(get("/api/conversations/" + conversationId)
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(conversationId))
+                .andExpect(jsonPath("$.participantUsernames").isArray());
+    }
+
+    @Test
+    void testGetConversation_OtherUserConversation_ReturnsForbidden() throws Exception {
+        Long conversationId = createConversation(user1Id, user2Id);
+
+        mockMvc.perform(get("/api/conversations/" + conversationId)
+                .header("Authorization", "Bearer " + user3AccessToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testUpdateConversation_OtherUserConversation_ReturnsForbidden() throws Exception {
+        Long conversationId = createConversation(user1Id, user2Id);
+
+        UpdateConversationRequest updateReq = new UpdateConversationRequest();
+        updateReq.setParticipantIds(List.of(user1Id, user3Id));
+
+        mockMvc.perform(put("/api/conversations/" + conversationId)
+                .header("Authorization", "Bearer " + user3AccessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testDeleteConversation_OtherUserConversation_ReturnsForbidden() throws Exception {
+        Long conversationId = createConversation(user1Id, user2Id);
+
+        mockMvc.perform(delete("/api/conversations/" + conversationId)
+                .header("Authorization", "Bearer " + user3AccessToken))
+                .andExpect(status().isForbidden());
     }
 }

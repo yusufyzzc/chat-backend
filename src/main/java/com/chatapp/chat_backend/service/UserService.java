@@ -3,12 +3,16 @@ package com.chatapp.chat_backend.service;
 import com.chatapp.chat_backend.entity.User;
 import com.chatapp.chat_backend.exception.BadRequestException;
 import com.chatapp.chat_backend.exception.ResourceNotFoundException;
+import com.chatapp.chat_backend.repository.ConversationRepository;
+import com.chatapp.chat_backend.repository.MessageRepository;
+import com.chatapp.chat_backend.repository.RefreshTokenRepository;
 import com.chatapp.chat_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +20,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final ConversationRepository conversationRepository;
+    private final MessageRepository messageRepository;
 
     public Page<User> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -61,8 +68,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(Long id) {
         User user = getUserById(id);
+        refreshTokenRepository.deleteByUser(user);
+        messageRepository.deleteBySenderId(id);
+        conversationRepository.deleteParticipantRowsByUserId(id);
         userRepository.delete(user);
     }
 }

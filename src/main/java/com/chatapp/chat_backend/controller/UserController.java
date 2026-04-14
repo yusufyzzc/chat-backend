@@ -8,8 +8,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +34,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id, Authentication authentication) {
+        if (!canAccessUser(authentication, id)) {
+            throw new AccessDeniedException("You can only view your own profile");
+        }
         User user = userService.getUserById(id);
         return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getCreatedAt()));
     }
@@ -52,7 +57,11 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody com.chatapp.chat_backend.dto.request.UpdateUserRequest request) {
+            @Valid @RequestBody com.chatapp.chat_backend.dto.request.UpdateUserRequest request,
+            Authentication authentication) {
+        if (!canAccessUser(authentication, id)) {
+            throw new AccessDeniedException("You can only update your own profile");
+        }
         User updated = userService.updateUser(id, request);
         return ResponseEntity.ok(new UserResponse(updated.getId(), updated.getUsername(), updated.getEmail(), updated.getCreatedAt()));
     }
@@ -62,5 +71,20 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean canAccessUser(Authentication authentication, Long userId) {
+        if (authentication == null) {
+            return false;
+        }
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        if (isAdmin) {
+            return true;
+        }
+
+        User currentUser = userService.getUserByUsername(authentication.getName());
+        return currentUser.getId().equals(userId);
     }
 }

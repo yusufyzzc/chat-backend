@@ -5,6 +5,9 @@ import com.chatapp.chat_backend.entity.User;
 import com.chatapp.chat_backend.exception.BadRequestException;
 import com.chatapp.chat_backend.exception.ResourceNotFoundException;
 import com.chatapp.chat_backend.repository.UserRepository;
+import com.chatapp.chat_backend.repository.RefreshTokenRepository;
+import com.chatapp.chat_backend.repository.ConversationRepository;
+import com.chatapp.chat_backend.repository.MessageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +27,15 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    private ConversationRepository conversationRepository;
+
+    @Mock
+    private MessageRepository messageRepository;
 
     @InjectMocks
     private UserService userService;
@@ -111,10 +123,17 @@ class UserServiceTest {
     @Test
     void deleteUser_WhenUserExists_DeletesUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        doNothing().when(refreshTokenRepository).deleteByUser(testUser);
+        doNothing().when(messageRepository).deleteBySenderId(1L);
+        doNothing().when(conversationRepository).deleteParticipantRowsByUserId(1L);
         doNothing().when(userRepository).delete(testUser);
 
         userService.deleteUser(1L);
 
+        verify(userRepository, times(1)).findById(1L);
+        verify(refreshTokenRepository, times(1)).deleteByUser(testUser);
+        verify(messageRepository, times(1)).deleteBySenderId(1L);
+        verify(conversationRepository, times(1)).deleteParticipantRowsByUserId(1L);
         verify(userRepository, times(1)).delete(testUser);
     }
 

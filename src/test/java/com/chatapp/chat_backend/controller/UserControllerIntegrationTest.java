@@ -32,6 +32,7 @@ public class UserControllerIntegrationTest {
 
     private String userToken;
     private Long targetUserId;
+    private Long otherUserId;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -67,6 +68,22 @@ public class UserControllerIntegrationTest {
             userToken = objectMapper.readTree(loginResult.getResponse().getContentAsString())
                     .get("accessToken").asText();
         }
+
+        String otherSuffix = UUID.randomUUID().toString().substring(0, 8);
+        RegisterRequest otherRequest = new RegisterRequest();
+        otherRequest.setUsername("otheruser_" + otherSuffix);
+        otherRequest.setEmail("otheruser_" + otherSuffix + "@example.com");
+        otherRequest.setPassword("password123");
+
+        MvcResult otherResult = mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(otherRequest)))
+                .andReturn();
+
+        if (otherResult.getResponse().getStatus() == 200 || otherResult.getResponse().getStatus() == 201) {
+            UserResponse response = objectMapper.readValue(otherResult.getResponse().getContentAsString(), UserResponse.class);
+            otherUserId = response.getId();
+        }
     }
 
     @Test
@@ -76,11 +93,43 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    void testGetUserByIdAfterLogin() throws Exception {
+    void testGetUserById_OwnProfile_ReturnsOk() throws Exception {
         mockMvc.perform(get("/api/users/" + targetUserId)
                 .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").exists());
+    }
+
+    @Test
+    void testGetUserById_OtherProfile_ReturnsForbidden() throws Exception {
+        mockMvc.perform(get("/api/users/" + otherUserId)
+                .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testUpdateUser_OwnProfile_ReturnsOk() throws Exception {
+        com.chatapp.chat_backend.dto.request.UpdateUserRequest request = new com.chatapp.chat_backend.dto.request.UpdateUserRequest();
+        request.setEmail("updated_" + UUID.randomUUID().toString().substring(0, 8) + "@example.com");
+
+        mockMvc.perform(put("/api/users/" + targetUserId)
+                .header("Authorization", "Bearer " + userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(request.getEmail()));
+    }
+
+    @Test
+    void testUpdateUser_OtherProfile_ReturnsForbidden() throws Exception {
+        com.chatapp.chat_backend.dto.request.UpdateUserRequest request = new com.chatapp.chat_backend.dto.request.UpdateUserRequest();
+        request.setEmail("blocked_" + UUID.randomUUID().toString().substring(0, 8) + "@example.com");
+
+        mockMvc.perform(put("/api/users/" + otherUserId)
+                .header("Authorization", "Bearer " + userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
