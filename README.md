@@ -92,6 +92,32 @@ H2 web console is available at `http://localhost:8080/h2-console`
 
 > **Note:** Never commit credentials directly. Use environment variables or a local `application-local.properties` file (already git-ignored).
 
+## Frontend (Vanilla JS UI)
+
+This project already includes a simple frontend built with Vanilla JavaScript.
+The UI is served by Spring Boot from `src/main/resources/static`.
+
+### How to open the frontend
+
+1. Start the backend:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+2. Open your browser and go to:
+
+`http://localhost:8080/`
+
+### Important notes
+
+- Do not open `index.html` directly from the file system. Open it through Spring Boot at `http://localhost:8080/`.
+- If PostgreSQL is not available locally, run with the H2 profile:
+
+```powershell
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=h2
+```
+
 ## Sample Credentials for Testing
 
 When the application starts (except with the `test` profile), default users are seeded automatically.
