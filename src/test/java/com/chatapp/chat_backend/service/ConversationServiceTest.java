@@ -5,6 +5,7 @@ import com.chatapp.chat_backend.entity.Conversation;
 import com.chatapp.chat_backend.entity.User;
 import com.chatapp.chat_backend.exception.ResourceNotFoundException;
 import com.chatapp.chat_backend.repository.ConversationRepository;
+import com.chatapp.chat_backend.repository.MessageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,9 @@ class ConversationServiceTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private MessageRepository messageRepository;
 
     @InjectMocks
     private ConversationService conversationService;
@@ -122,10 +126,14 @@ class ConversationServiceTest {
     @Test
     void deleteConversation_CallsRepositoryDelete() {
         when(conversationRepository.findById(1L)).thenReturn(Optional.of(testConversation));
+        doNothing().when(messageRepository).hardDeleteByConversationId(1L);
+        doNothing().when(conversationRepository).deleteParticipantRowsByConversationId(1L);
         doNothing().when(conversationRepository).delete(testConversation);
 
         conversationService.deleteConversation(1L);
 
+        verify(messageRepository, times(1)).hardDeleteByConversationId(1L);
+        verify(conversationRepository, times(1)).deleteParticipantRowsByConversationId(1L);
         verify(conversationRepository, times(1)).delete(testConversation);
     }
 

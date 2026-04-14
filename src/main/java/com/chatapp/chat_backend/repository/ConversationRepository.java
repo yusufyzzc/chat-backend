@@ -18,4 +18,9 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Transactional
     @Query(value = "delete from conversation_participants where user_id = :userId", nativeQuery = true)
     void deleteParticipantRowsByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "delete from conversation_participants where conversation_id = :conversationId", nativeQuery = true)
+    void deleteParticipantRowsByConversationId(@Param("conversationId") Long conversationId);
 }

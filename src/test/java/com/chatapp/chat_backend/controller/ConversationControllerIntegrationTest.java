@@ -3,6 +3,7 @@ package com.chatapp.chat_backend.controller;
 import com.chatapp.chat_backend.dto.request.CreateConversationRequest;
 import com.chatapp.chat_backend.dto.request.LoginRequest;
 import com.chatapp.chat_backend.dto.request.RegisterRequest;
+import com.chatapp.chat_backend.dto.request.SendMessageRequest;
 import com.chatapp.chat_backend.dto.request.UpdateConversationRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -125,6 +126,29 @@ public class ConversationControllerIntegrationTest {
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNoContent());
     }
+
+            @Test
+            void testDeleteConversation_WithMessages_Returns204() throws Exception {
+            Long conversationId = createConversation(user1Id, user2Id);
+
+            SendMessageRequest sendMessageRequest = new SendMessageRequest();
+            sendMessageRequest.setSenderId(user1Id);
+            sendMessageRequest.setContent("message before delete");
+
+            mockMvc.perform(post("/api/conversations/" + conversationId + "/messages")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(sendMessageRequest)))
+                .andExpect(status().isCreated());
+
+            mockMvc.perform(delete("/api/conversations/" + conversationId)
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
+            mockMvc.perform(get("/api/conversations/" + conversationId)
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound());
+            }
 
     @Test
     void testDeleteConversation_WhenNotFound_Returns404() throws Exception {
